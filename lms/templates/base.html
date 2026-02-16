@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LMS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/admin_tweaks.css' %}">
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
+  <div class="max-w-6xl mx-auto px-4 py-6">
+
+    <header class="flex items-center justify-between gap-4 mb-6">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center font-bold">
+          L
+        </div>
+        <div>
+          <div class="font-bold leading-tight">LMS</div>
+          <div class="text-xs text-slate-300">Simple • Clean • Role-based</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        {% if user.is_authenticated %}
+        {% with r=user.role|default:"USER" %}
+        <span class="px-3 py-1 rounded-full text-xs font-semibold border border-white/10
+            {% if user.is_superuser %} bg-purple-500/15 text-purple-200
+            {% elif r == 'ADMIN' %} bg-amber-500/15 text-amber-200
+            {% elif r == 'LECTURER' %} bg-blue-500/15 text-blue-200
+            {% elif r == 'STUDENT' %} bg-emerald-500/15 text-emerald-200
+            {% else %} bg-slate-500/15 text-slate-200 {% endif %}">
+          {% if user.is_superuser %}Super Admin{% else %}{{ r|title }}{% endif %}
+        </span>
+        {% endwith %}
+
+        <span class="text-sm text-slate-200">Hi, {{ user.get_username }}</span>
+
+        {# Updated LMS Logout button (GET redirect) #}
+        {# Updated LMS Logout button (POST form) #}
+        <form action="{% url 'logout' %}" method="post" class="inline">
+          {% csrf_token %}
+          <button type="submit"
+            class="px-4 py-2 rounded-xl bg-white/10 border border-white/10 hover:bg-white/15 transition">
+            Logout
+          </button>
+        </form>
+        {% else %}
+        {# Login button removed as per request #}
+        {% endif %}
+      </div>
+    </header>
+
+    {% if messages %}
+    <div class="space-y-2 mb-6">
+      {% for message in messages %}
+      <div class="p-3 rounded-xl bg-white/10 border border-white/10">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="rounded-2xl bg-white/5 border border-white/10 p-4 md:p-6">
+      {% block content %}{% endblock %}
+    </div>
+
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,28 @@
+<h2>Pending Assignments for Approval</h2>
+<hr>
+
+{% for item in items %}
+  <div style="background:#fff;padding:15px;border:1px solid #ddd;border-radius:10px;margin-bottom:15px;">
+    <h3 style="margin:0;">{{ item.assignment.title }}</h3>
+    <p style="margin:5px 0;"><b>Course:</b> {{ item.assignment.course }}</p>
+    <p style="margin:5px 0;"><b>Deadline:</b> {{ item.assignment.deadline }}</p>
+    <p style="margin:5px 0;"><b>Created by:</b> {{ item.requested_by }}</p>
+
+    <form method="post" action="/admin/approvals/{{ item.assignment.id }}/approve/" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" style="padding:8px 14px;background:green;color:white;border:none;border-radius:6px;">
+        Approve ✅
+      </button>
+    </form>
+
+    <form method="post" action="/admin/approvals/{{ item.assignment.id }}/reject/" style="display:inline;margin-left:10px;">
+      {% csrf_token %}
+      <input name="comment" placeholder="Reject reason (optional)" style="padding:7px;border-radius:6px;border:1px solid #ccc;">
+      <button type="submit" style="padding:8px 14px;background:red;color:white;border:none;border-radius:6px;">
+        Reject ❌
+      </button>
+    </form>
+  </div>
+{% empty %}
+  <p>No pending approvals 🎉</p>
+{% endfor %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Grade Submission &mdash; <span class="text-slate-400 font-medium">{{ submission.student.username }}</span></h1>
+            <p class="text-slate-400 mt-2">Evaluating: <span class="text-blue-400 font-bold">{{ submission.assignment.title }}</span></p>
+        </div>
+        <a href="{% url 'lecturer-dashboard' %}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-colors border border-slate-700">Back</a>
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-3">
+        <!-- Student Submission Detail -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="p-8 rounded-2xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Submission Details</h3>
+                <div class="space-y-4">
+                    <div class="p-4 rounded-xl bg-slate-900/50 border border-slate-700/50">
+                        <span class="text-slate-500 text-xs block mb-1">Submitted at</span>
+                        <span class="text-white font-medium">{{ submission.created_at|date:"F d, Y - H:i" }}</span>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-900 border border-slate-700">
+                        <span class="text-slate-500 text-xs block mb-2">Attached Files</span>
+                        {% for file in submission.files.all %}
+                        <div class="flex items-center justify-between group">
+                            <span class="text-blue-400 text-sm hover:underline cursor-pointer">{{ file.original_name|default:file.file.name }}</span>
+                            <a href="{{ file.file.url }}" class="text-[10px] text-slate-500 hover:text-white transition-colors">Download</a>
+                        </div>
+                        {% empty %}
+                        <span class="text-slate-600 italic text-sm">No files attached.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marking Form -->
+            <div class="p-8 rounded-2xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Marking & Feedback</h3>
+                <form method="POST" class="space-y-6">
+                    {% csrf_token %}
+
+                    <div>
+                        <label for="marks" class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Marks Awarded (Max: {{ submission.assignment.total_marks }})</label>
+                        <input type="number" id="marks" name="marks" value="{{ submission.marks_awarded|default:'' }}" max="{{ submission.assignment.total_marks }}" min="0" required class="w-full bg-slate-900 border border-slate-700 text-white text-lg font-bold rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label for="feedback" class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Feedback for Student</label>
+                        <textarea id="feedback" name="feedback" rows="5" required placeholder="Great work! One thing to improve is..." class="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">{{ submission.feedback|default:'' }}</textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 transform hover:-translate-y-0.5">
+                        Save Grade & Feedback
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Assignment Context -->
+        <div class="space-y-6">
+            <div class="p-6 rounded-2xl bg-slate-800/80 border border-slate-700">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Assignment Overview</h3>
+                <div class="space-y-4">
+                    <div>
+                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider block">Passmark</span>
+                        <span class="text-white font-bold">{{ submission.assignment.passmark_percentage }}%</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider block">Total Marks</span>
+                        <span class="text-white font-bold">{{ submission.assignment.total_marks }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider block">Instructions</span>
+                        <p class="text-slate-400 text-xs mt-1 leading-relaxed">{{ submission.assignment.description }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

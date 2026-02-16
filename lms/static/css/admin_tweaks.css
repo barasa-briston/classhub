@@ -1,0 +1,185 @@
+/* Custom Admin UI Tweaks */
+
+/* Fix horizontal selector widget (Groups/Permissions) */
+.selector-available h2,
+.selector-chosen h2 {
+    color: #333 !important;
+    font-weight: bold;
+}
+
+.selector .selector-filter label {
+    color: #333 !important;
+}
+
+.selector-available select,
+.selector-chosen select {
+    color: #000 !important;
+    background-color: #fff !important;
+}
+
+/* Improve Help Text Contrast */
+.help,
+.help-block {
+    color: #00ecff !important;
+    /* Cyan-ish for visibility in dark mode */
+    font-size: 0.85rem;
+}
+
+/* Highlight Active Tabs */
+.nav-tabs .nav-link.active {
+    background-color: #007bff !important;
+    color: #fff !important;
+    border-color: #0056b3 !important;
+    font-weight: bold;
+}
+
+.nav-tabs .nav-link {
+    color: #adb5bd !important;
+    border-bottom: 2px solid transparent;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #fff !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Make Field Headers and Labels bolder and larger */
+.col-form-label,
+label,
+.card-title {
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    font-size: 1.05rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Fix help text to be extremely readable */
+.help,
+.help-block,
+.form-text {
+    color: #ff9d00 !important;
+    /* Bright orange for important hints */
+    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+    word-wrap: break-word !important;
+    white-space: normal !important;
+    display: block !important;
+    max-width: 100% !important;
+}
+
+/* Add horizontal slider for long content areas */
+.card-body,
+.form-content,
+.inline-group,
+.table-responsive,
+.selector {
+    overflow-x: auto !important;
+}
+
+/* Ensure selector widgets don't break layout */
+.selector {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 15px !important;
+}
+
+.selector-available,
+.selector-chosen {
+    min-width: 300px !important;
+    flex: 1 !important;
+}
+
+/* Fix buttons in white background areas */
+.selector-available .selector-chooseall,
+.selector-chosen .selector-clearall {
+    color: #ffffff !important;
+    background-color: #343a40 !important;
+    border: 1px solid #454d55 !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    font-weight: bold !important;
+}
+
+/* Ensure password hint text is readable */
+.password-hint {
+    color: #00ff88 !important;
+    /* Vibrant green for secondary info */
+}
+
+/* Increase general body font size for admin */
+body {
+    font-size: 1rem !important;
+}
+
+/* Fix for Group/Permissions widget readability */
+.selector h2 {
+    font-size: 1rem !important;
+    background: #444 !important;
+    color: #fff !important;
+    padding: 8px !important;
+}
+
+/* Blinking & Pulsing Notifications */
+@keyframes slow-glow {
+    0% {
+        box-shadow: 0 0 5px rgba(245, 158, 11, 0.2);
+        border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+        border-color: rgba(245, 158, 11, 1);
+    }
+
+    100% {
+        box-shadow: 0 0 5px rgba(245, 158, 11, 0.2);
+        border-color: rgba(245, 158, 11, 0.3);
+    }
+}
+
+@keyframes pulse-dot-anim {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.8;
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+    }
+
+    70% {
+        transform: scale(1.2);
+        opacity: 1;
+        box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+    }
+
+    100% {
+        transform: scale(0.9);
+        opacity: 0.8;
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+    }
+}
+
+.blink-notification {
+    animation: slow-glow 3s infinite ease-in-out;
+}
+
+.btn-blink {
+    position: relative;
+    animation: slow-glow 2s infinite ease-in-out !important;
+    border-width: 2px !important;
+}
+
+.pulse-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #f59e0b;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse-dot-anim 1.5s infinite;
+    vertical-align: middle;
+}
+
+.pulse-dot-large {
+    width: 14px;
+    height: 14px;
+}

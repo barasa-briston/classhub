@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Fee Statement</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #2563eb;
+            font-size: 24px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            margin: 5px 0;
+            color: #64748b;
+        }
+
+        .info-grid {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .info-col {
+            width: 48%;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+
+        .value {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: bold;
+            text-align: left;
+            padding: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .total-row td {
+            border-top: 2px solid #2563eb;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .status-paid {
+            color: #10b981;
+        }
+
+        .status-pending {
+            color: #f59e0b;
+        }
+
+        .status-rejected {
+            color: #f43f5e;
+        }
+
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 10px;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Fee Statement</h1>
+        <p>Generated on {{ date|date:"F d, Y" }}</p>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-col">
+            <div class="label">Student Details</div>
+            <div class="value">{{ student.username }}</div>
+            <div class="value">{{ student.email }}</div>
+            <div class="value">{{ student.studentprofile.registration_number }}</div>
+        </div>
+        <div class="info-col" style="text-align: right;">
+            <div class="label">Course Details</div>
+            <div class="value">{{ course.name }}</div>
+            <div class="value">Fee: KES {{ course.fee }}</div>
+            <div class="value">{{ course.cohort }}</div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Transaction Ref</th>
+                <th>Method</th>
+                <th>Provider</th>
+                <th>Status</th>
+                <th style="text-align: right;">Amount (KES)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                <td>{{ payment.transaction_id }}</td>
+                <td>{{ payment.payment_method }}</td>
+                <td>{{ payment.provider|default:"-" }}</td>
+                <td>
+                    <span class="status-{{ payment.status|lower }}">{{ payment.status }}</span>
+                </td>
+                <td style="text-align: right;">{{ payment.amount }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="5" style="text-align: right;">Total Paid</td>
+                <td style="text-align: right;">{{ total_paid }}</td>
+            </tr>
+            <tr class="total-row" style="border-top: none;">
+                <td colspan="5" style="text-align: right;">Outstanding Balance</td>
+                <td style="text-align: right; color: {% if balance > 0 %}#f43f5e{% else %}#10b981{% endif %};">
+                    {{ balance }}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>This is a computer-generated document and does not require a signature.</p>
+        <p>&copy; {% now "Y" %} LMS. All rights reserved.</p>
+    </div>
+</body>
+
+</html>

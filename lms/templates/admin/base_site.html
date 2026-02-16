@@ -1,0 +1,28 @@
+{% extends "admin/base.html" %}
+
+{# Replace the header tools so we control logout behavior #}
+{% block usertools %}
+  {% if user.is_authenticated %}
+    <div id="user-tools" style="display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+      <a href="{% url 'admin:index' %}">Dashboard</a>
+      <a href="/">Main Site</a>
+
+      {# LMS logout (POST) -> back to LMS login #}
+      <form method="post" action="{% url 'logout' %}" style="display:inline; margin:0;">
+        {% csrf_token %}
+        <button type="submit" style="background:none; border:none; padding:0; cursor:pointer; color:inherit;">
+          LMS Logout
+        </button>
+      </form>
+
+      {# Admin logout (POST) -> redirect to LMS login #}
+      <form method="post" action="{% url 'admin:logout' %}" style="display:inline; margin:0;">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="/accounts/login/" />
+        <button type="submit" style="background:none; border:none; padding:0; cursor:pointer; color:inherit;">
+          Admin Logout
+        </button>
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}

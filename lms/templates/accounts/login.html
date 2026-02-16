@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="min-h-[70vh] grid place-items-center">
+  <div class="w-full max-w-md rounded-2xl bg-white/5 border border-white/10 p-6 md:p-8 shadow-xl">
+    <h1 class="text-2xl font-bold mb-1">Sign in</h1>
+    <p class="text-sm text-slate-300 mb-6">Use your LMS username and password.</p>
+
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+
+      <div>
+        <label class="block text-sm text-slate-200 mb-1">Username</label>
+        <input type="text" name="username" autocomplete="username" required class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/10
+                      focus:outline-none focus:ring-2 focus:ring-blue-600/60" placeholder="e.g. barasa" />
+      </div>
+
+      <div>
+        <label class="block text-sm text-slate-200 mb-1">Password</label>
+        <input type="password" name="password" autocomplete="current-password" required class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/10
+                      focus:outline-none focus:ring-2 focus:ring-blue-600/60" placeholder="••••••••" />
+      </div>
+
+      {% if form.errors %}
+      <div class="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-200 text-sm">
+        Invalid username or password.
+      </div>
+      {% endif %}
+
+      <button type="submit" class="w-full px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 transition font-semibold">
+        Log in
+      </button>
+
+      <div class="text-center mt-4">
+        <a href="{% url 'password-reset-request' %}"
+          class="text-sm text-blue-400 hover:text-blue-300 transition font-medium">Forgot password? Request Reset</a>
+      </div>
+
+      {% if next %}
+      <input type="hidden" name="next" value="{{ next }}">
+      {% endif %}
+    </form>
+
+    <div class="mt-8 text-[11px] text-slate-500 bg-slate-900/50 p-4 rounded-xl border border-white/5">
+      Tip: If your cohort study period has concluded, your account may be locked. Contact Admin for reactivation.
+    </div>
+  </div>
+</div>
+
+{% endblock %}

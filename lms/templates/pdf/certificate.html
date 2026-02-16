@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: "Times New Roman", Times, serif;
+            text-align: center;
+            border: 10px solid #787878;
+            padding: 20px;
+        }
+
+        .certificate-container {
+            padding: 50px;
+            border: 5px double #787878;
+            height: 90%;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #555;
+            margin-bottom: 40px;
+        }
+
+        .recipient {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 20px 0;
+            border-bottom: 2px solid #333;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        .course-name {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #000;
+        }
+
+        .details {
+            font-size: 18px;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+
+        .signatures {
+            margin-top: 80px;
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .sig-block {
+            width: 40%;
+            border-top: 1px solid #333;
+            padding-top: 10px;
+        }
+
+        .date {
+            margin-top: 40px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="certificate-container">
+        <h1>Certificate of Completion</h1>
+        <h2>This is to certify that</h2>
+
+        <div class="recipient">
+            {{ student.first_name }} {{ student.last_name }}
+        </div>
+
+        <div class="details">
+            Registration Number: {{ student.studentprofile.registration_number }}<br>
+            Student ID: {{ student.username }}
+        </div>
+
+        <p class="details">
+            has successfully completed the course
+        </p>
+
+        <div class="course-name">
+            {{ course.name }}
+        </div>
+
+        {% if course.cohort %}
+        <p class="details">
+            Cohort: {{ course.cohort.name }}<br>
+            {{ course.cohort.start_date|date:"F Y" }} - {{ course.cohort.end_date|date:"F Y" }}
+        </p>
+        {% endif %}
+
+        <div class="signatures">
+            <div class="sig-block" style="float:left;">
+                <p><strong>Instructor</strong></p>
+            </div>
+            <div class="sig-block" style="float:right;">
+                <p><strong>Head of Department</strong></p>
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+
+        <div class="date">
+            Issued on: {% now "F j, Y" %}
+        </div>
+    </div>
+</body>
+
+</html>

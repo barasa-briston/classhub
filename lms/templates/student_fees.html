@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header with Back Button -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">My Fees</h1>
+            <p class="text-slate-500 mt-1">Manage course payments securely.</p>
+        </div>
+        <a href="{% url 'student-dashboard' %}"
+            class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all border border-slate-700 font-bold text-sm shadow-lg flex items-center gap-2">
+            <span>←</span> Back to Dashboard
+        </a>
+    </div>
+
+    {% for data in fee_data %}
+    <div class="p-1 rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 shadow-2xl">
+        <div class="p-6 md:p-8">
+            <!-- Course Header -->
+            <div
+                class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700/50 pb-6 mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-1">{{ data.course.name }}</h2>
+
+                </div>
+                <div class="mt-4 md:mt-0 flex items-center gap-6">
+                    <a href="{% url 'download-fee-statement' data.course.id %}" target="_blank"
+                        class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-xs font-bold uppercase tracking-wider border border-slate-600">
+                        <span>📄</span> Download Statement
+                    </a>
+                    <div class="text-right">
+                        <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Outstanding Balance
+                        </p>
+                        <span
+                            class="text-3xl font-black {% if data.balance > 0 %}text-rose-400{% else %}text-emerald-400{% endif %}">
+                            KES {{ data.balance }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Payment Section -->
+                <div class="lg:col-span-2 space-y-6">
+                    {% if data.balance > 0 %}
+                    <div class="bg-slate-800/50 rounded-2xl border border-slate-700 overflow-hidden">
+                        <!-- Tabs -->
+                        <div class="flex border-b border-slate-700">
+                            <button onclick="switchTab('mpesa-{{ data.course.id }}')"
+                                id="tab-btn-mpesa-{{ data.course.id }}"
+                                class="flex-1 py-4 text-center font-bold text-sm uppercase tracking-wider bg-slate-700/50 text-white border-b-2 border-green-500 transition-all hover:bg-slate-700">
+                                Mobile Banking
+                            </button>
+                            <button onclick="switchTab('bank-{{ data.course.id }}')"
+                                id="tab-btn-bank-{{ data.course.id }}"
+                                class="flex-1 py-4 text-center font-bold text-sm uppercase tracking-wider text-slate-500 hover:text-white transition-all hover:bg-slate-700/30">
+                                Bank Transfer
+                            </button>
+                        </div>
+
+                        <!-- Mobile Banking Form -->
+                        <div id="mpesa-{{ data.course.id }}" class="p-6 tab-content">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center text-2xl">
+                                    📱</div>
+                                <div>
+                                    <h3 class="font-bold text-white">Mobile Money Payment</h3>
+                                    <p class="text-slate-400 text-sm">Pay via M-Pesa or Airtel Money</p>
+                                </div>
+                            </div>
+
+                            <form action="{% url 'initiate-mpesa' %}" method="POST" class="space-y-4">
+                                {% csrf_token %}
+                                <input type="hidden" name="course_id" value="{{ data.course.id }}">
+
+                                <div>
+                                    <label
+                                        class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Select
+                                        Provider</label>
+                                    <select name="provider"
+                                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-colors font-bold">
+                                        <option value="M-Pesa">M-Pesa</option>
+                                        <option value="Airtel Money">Airtel Money</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Transaction
+                                        Code</label>
+                                    <input type="text" name="transaction_id" placeholder="e.g. QW12345678" required
+                                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-colors font-bold uppercase">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Phone
+                                        Number</label>
+                                    <input type="text" name="phone_number" placeholder="07XX XXX XXX" required
+                                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-colors font-bold">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Amount
+                                        (KES)</label>
+                                    <input type="number" name="amount" value="{{ data.balance }}"
+                                        max="{{ data.balance }}" min="1" required
+                                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-colors font-bold">
+                                </div>
+                                <button type="submit"
+                                    class="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-black uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-green-600/20">
+                                    Submit for Verification
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Bank Form -->
+                        <div id="bank-{{ data.course.id }}" class="p-6 hidden tab-content">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-2xl">
+                                    🏦</div>
+                                <div>
+                                    <h3 class="font-bold text-white">Bank Transfer</h3>
+                                    <p class="text-slate-400 text-sm">Upload transaction details for verification</p>
+                                </div>
+                            </div>
+
+                            <form action="{% url 'submit-bank-payment' %}" method="POST" enctype="multipart/form-data"
+                                class="space-y-4">
+                                {% csrf_token %}
+                                <input type="hidden" name="course_id" value="{{ data.course.id }}">
+
+                                <div>
+                                    <label
+                                        class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Select
+                                        Bank</label>
+                                    <select name="bank_name" required
+                                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors font-bold">
+                                        <option value="" disabled selected>Select your bank</option>
+                                        <option value="KCB Bank Kenya">KCB Bank Kenya</option>
+                                        <option value="Equity Bank Kenya">Equity Bank Kenya</option>
+                                        <option value="Co-operative Bank of Kenya">Co-operative Bank of Kenya</option>
+                                        <option value="Standard Chartered Bank Kenya">Standard Chartered Bank Kenya
+                                        </option>
+                                        <option value="NCBA Bank Kenya">NCBA Bank Kenya</option>
+                                        <option value="Absa Bank Kenya">Absa Bank Kenya</option>
+                                        <option value="Stanbic Bank Kenya">Stanbic Bank Kenya</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Transaction
+                                        Code / Ref</label>
+                                    <input type="text" name="transaction_id" placeholder="e.g. QW12345678" required
+                                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors font-bold">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Amount
+                                        Paid (KES)</label>
+                                    <input type="number" name="amount" value="{{ data.balance }}" required
+                                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors font-bold">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Bank
+                                        Slip (Optional)</label>
+                                    <input type="file" name="bank_slip" accept=".jpg,.jpeg,.png,.pdf"
+                                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-400 focus:outline-none focus:border-blue-500 transition-colors font-bold text-sm">
+                                </div>
+                                <button type="submit"
+                                    class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-blue-600/20">
+                                    Submit Payment
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div
+                        class="h-full flex items-center justify-center bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-8 text-center">
+                        <div>
+                            <div
+                                class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <span class="text-4xl">🎉</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-emerald-400 mb-2">Fully Paid!</h3>
+                            <p class="text-slate-400">You have settled all fees for this course.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- History Section -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Payment History</h3>
+                        <span class="text-xs font-bold text-slate-500">Total: KES {{ data.total_paid }}</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        {% for payment in data.payments %}
+                        <div
+                            class="p-4 rounded-xl border {% if payment.status == 'APPROVED' %}bg-slate-800/50 border-slate-700{% elif payment.status == 'PENDING' %}bg-amber-500/5 border-amber-500/20{% else %}bg-rose-500/5 border-rose-500/20{% endif %}">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-white font-bold">KES {{ payment.amount }}</span>
+                                {% if payment.status == 'APPROVED' %}
+                                <span
+                                    class="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded font-black uppercase">Approved</span>
+                                {% elif payment.status == 'PENDING' %}
+                                <span
+                                    class="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded font-black uppercase">Pending</span>
+                                {% else %}
+                                <span
+                                    class="text-[10px] px-2 py-0.5 bg-rose-500/20 text-rose-400 rounded font-black uppercase">Rejected</span>
+                                {% endif %}
+                            </div>
+                            <div class="flex justify-between items-center text-[10px] text-slate-500 font-bold">
+                                <span>{{ payment.payment_method }}</span>
+                                <div>
+                                    <span class="mr-2">{{ payment.payment_date|date:"M d, Y" }}</span>
+                                    {% if payment.status == 'REJECTED' and payment.remarks %}
+                                    <span class="block text-rose-400 mt-1 text-right">Note: {{ payment.remarks }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-slate-600 text-sm italic text-center py-4">No payments recorded.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info">
+        You are not enrolled in any courses with fee information.
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    function switchTab(tabId) {
+        // Hide all contents in the same container
+        const container = document.getElementById(tabId).parentElement;
+        const contents = container.querySelectorAll('.tab-content');
+        contents.forEach(el => el.classList.add('hidden'));
+
+        // Show selected
+        document.getElementById(tabId).classList.remove('hidden');
+
+        // Update button styles (basic implementation)
+        const courseId = tabId.split('-')[1];
+        const mpesaBtn = document.getElementById('tab-btn-mpesa-' + courseId);
+        const bankBtn = document.getElementById('tab-btn-bank-' + courseId);
+
+        if (tabId.includes('mpesa')) {
+            mpesaBtn.classList.add('text-white', 'border-b-2', 'border-green-500', 'bg-slate-700/50');
+            mpesaBtn.classList.remove('text-slate-500', 'hover:bg-slate-700/30');
+
+            bankBtn.classList.remove('text-white', 'border-b-2', 'border-green-500', 'bg-slate-700/50');
+            bankBtn.classList.add('text-slate-500', 'hover:bg-slate-700/30');
+        } else {
+            bankBtn.classList.add('text-white', 'border-b-2', 'border-blue-500', 'bg-slate-700/50');
+            bankBtn.classList.remove('text-slate-500', 'hover:bg-slate-700/30');
+
+            mpesaBtn.classList.remove('text-white', 'border-b-2', 'border-green-500', 'bg-slate-700/50');
+            mpesaBtn.classList.add('text-slate-500', 'hover:bg-slate-700/30');
+        }
+    }
+</script>
+{% endblock %}

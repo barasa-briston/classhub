@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-8">
+  <!-- Header -->
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <h1 class="text-3xl font-extrabold text-white tracking-tight">Admin Dashboard &mdash; <span
+        class="text-slate-400 font-medium">Overview</span></h1>
+    <div class="flex items-center gap-2">
+      <a href="{% url 'manage-users' %}"
+        class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold rounded-xl transition-all border border-slate-700">Manage
+        Users</a>
+      <a href="{% url 'manage-cohorts' %}"
+        class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold rounded-xl transition-all border border-slate-700">Manage
+        Cohorts</a>
+      <a href="{% url 'manage-lecturers' %}"
+        class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20">Lecturer
+        Access</a>
+    </div>
+  </div>
+
+  <!-- Unified Action Center -->
+  <div class="p-6 rounded-2xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm">
+    <h2 class="text-2xl font-bold text-white mb-6">Action Center</h2>
+
+    <div class="grid gap-8 md:grid-cols-3">
+      <!-- 1. Verify Payments -->
+      <div class="space-y-4">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2">Payment
+          Verification</h3>
+        <p class="text-slate-400 text-sm">Review and approve pending student fee payments.</p>
+        <a href="{% url 'verify-payments' %}"
+          class="block w-full py-3 bg-slate-700 hover:bg-slate-600 text-white text-center rounded-xl font-bold transition-all border border-slate-600 {% if notification_counts.payments > 0 %}btn-blink{% endif %}">
+          {% if notification_counts.payments > 0 %}<span class="pulse-dot"></span>{% endif %}
+          Go to Verification
+        </a>
+      </div>
+
+      <!-- 2. Assignment Approvals -->
+      <div class="space-y-4">
+        <h3
+          class="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2 flex items-center">
+          {% if notification_counts.assignments > 0 %}<span class="pulse-dot"></span>{% endif %}
+          Assignments Needing Approval
+        </h3>
+        <div class="space-y-3">
+          {% for assignment in pending_assignments %}
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/50 border border-slate-700/50">
+            <div>
+              <span class="text-white font-bold block text-sm">{{ assignment.title }}</span>
+              <span class="text-slate-500 text-[10px]">{{ assignment.created_by.username }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <form method="POST" action="{% url 'approve-assignment' assignment.id %}">
+                {% csrf_token %}
+                <button type="submit"
+                  class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold rounded-lg transition-colors">Approve</button>
+              </form>
+              <button onclick="document.getElementById('reject-form-{{ assignment.id }}').classList.toggle('hidden')"
+                class="px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold rounded-lg transition-colors">Reject</button>
+            </div>
+          </div>
+          <!-- Rejection Form (Hidden by default) -->
+          <div id="reject-form-{{ assignment.id }}"
+            class="hidden mt-2 p-3 bg-rose-900/10 border border-rose-900/20 rounded-xl">
+            <form method="POST" action="{% url 'reject-assignment' assignment.id %}" class="flex gap-2">
+              {% csrf_token %}
+              <input type="text" name="rejection_reason" placeholder="Reason for rejection..." required
+                class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-rose-500">
+              <button type="submit"
+                class="px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold rounded-lg transition-colors">Confirm
+                Reject</button>
+            </form>
+          </div>
+          {% empty %}
+          <p class="text-slate-500 italic text-xs py-2">No assignments pending.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- 3. Grade Approvals -->
+      <div class="space-y-4">
+        <h3
+          class="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2 flex items-center">
+          {% if notification_counts.grades > 0 %}<span class="pulse-dot"></span>{% endif %}
+          Grades Needing Approval
+        </h3>
+        <div class="space-y-3">
+          {% for submission in pending_grades %}
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/50 border border-slate-700/50">
+            <div>
+              <span class="text-white font-bold block text-sm">{{ submission.student.username }}</span>
+              <span class="text-slate-500 text-[10px]">{{ submission.assignment.title }} &bull; <span
+                  class="text-emerald-400">{{ submission.grade }}</span></span>
+            </div>
+            <form method="POST" action="{% url 'approve-grade' submission.id %}">
+              {% csrf_token %}
+              <button type="submit"
+                class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold rounded-lg transition-colors">Lock</button>
+            </form>
+          </div>
+          {% empty %}
+          <p class="text-slate-500 italic text-xs py-2">No grades pending.</p>
+          {% endfor %}
+        </div>
+
+        <!-- Password Reset Approvals Link -->
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2 mt-6">
+          Password Resets</h3>
+        <a href="{% url 'manage-password-resets' %}"
+          class="block w-full py-3 bg-blue-600 hover:bg-blue-500 text-white text-center rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 {% if notification_counts.resets > 0 %}btn-blink{% endif %}">
+          {% if notification_counts.resets > 0 %}<span class="pulse-dot"></span>{% endif %}
+          Manage Resets
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Grid -->
+  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <!-- Assignments List -->
+    <div class="p-6 rounded-2xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-white">Recent Assignments</h2>
+      </div>
+      <div class="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+        {% for assignment in assignments %}
+        <div
+          class="flex items-center justify-between p-3 rounded-xl bg-slate-900/50 border border-slate-700/50 hover:border-slate-600/50 transition-colors">
+          <span class="text-slate-300 font-medium text-sm line-clamp-1">{{ assignment.title }}</span>
+          <span class="text-[10px] text-slate-500">{{ assignment.course.code }}</span>
+        </div>
+        {% empty %}
+        <p class="text-slate-500 italic text-sm py-4 text-center">No assignments found.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Submissions List -->
+    <div class="p-6 rounded-2xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-white">Recent Submissions</h2>
+      </div>
+      <div class="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+        {% for submission in submissions %}
+        <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-700/50">
+          <div class="flex justify-between items-start mb-1">
+            <span class="text-white font-bold text-sm block">{{ submission.student.username }}</span>
+            {% if submission.is_marked %}
+            <span class="text-[10px] uppercase tracking-wider font-bold text-emerald-400">Marked</span>
+            {% else %}
+            <span class="text-[10px] uppercase tracking-wider font-bold text-amber-400">Pending</span>
+            {% endif %}
+          </div>
+          <span class="text-slate-400 text-xs truncate block italic">{{ submission.assignment.title }}</span>
+        </div>
+        {% empty %}
+        <p class="text-slate-500 italic text-sm py-4 text-center">No submissions found.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Reports Card -->
+    <div class="p-6 rounded-2xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-white">Reports</h2>
+      </div>
+      <div class="space-y-4">
+        <div class="p-4 rounded-xl bg-slate-900/50 border border-slate-700/50">
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">Enrollments</p>
+          <div class="flex gap-2">
+            <a href="{% url 'generate-enrollment-report' %}"
+              class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold text-center rounded-lg border border-slate-600 transition-colors">Excel</a>
+            <a href="{% url 'generate-enrollment-report' %}?pdf=1" target="_blank"
+              class="flex-1 py-2 bg-red-900/20 hover:bg-red-900/40 text-red-400 text-xs font-bold text-center rounded-lg border border-red-900/50 transition-colors">Preview
+              PDF</a>
+          </div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/50 border border-slate-700/50">
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">Fee Payments</p>
+          <div class="flex gap-2">
+            <a href="{% url 'generate-payment-report' %}"
+              class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold text-center rounded-lg border border-slate-600 transition-colors">Excel</a>
+            <a href="{% url 'generate-payment-report' %}?pdf=1" target="_blank"
+              class="flex-1 py-2 bg-red-900/20 hover:bg-red-900/40 text-red-400 text-xs font-bold text-center rounded-lg border border-red-900/50 transition-colors">Preview
+              PDF</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Performance Section (Redesigned) -->
+  <div class="p-6 rounded-2xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <h2 class="text-xl font-bold text-white">Student Performance</h2>
+
+      <!-- Search & Filter Controls -->
+      <form method="GET" class="flex items-center gap-3">
+        <div class="relative">
+          <input type="text" name="q" value="{{ search_query }}" placeholder="Search students..."
+            class="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-blue-500 w-48 md:w-64">
+          <span class="absolute left-2.5 top-2.5 text-slate-500 text-xs">🔍</span>
+        </div>
+
+        <select name="per_page" onchange="this.form.submit()" title="Rows per page"
+          class="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-2 py-2 focus:outline-none focus:border-blue-500">
+          {% for option in per_page_options %}
+          <option value="{{ option.value }}" {{ option.selected }}>{{ option.value }} rows</option>
+          {% endfor %}
+        </select>
+
+        {% if search_query %}
+        <a href="{% url 'admin-dashboard' %}" class="text-rose-400 text-xs hover:underline">Clear</a>
+        {% endif %}
+      </form>
+    </div>
+
+    <div class="space-y-4">
+      {% for student in students %}
+      <details
+        class="group bg-slate-900/30 rounded-xl border border-slate-700/50 open:bg-slate-900/80 transition-all duration-300">
+        <summary class="flex items-center justify-between p-4 cursor-pointer list-none select-none">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 border border-slate-700">
+              {{ student.username|make_list|first|upper }}
+            </div>
+            <span class="font-bold text-white">{{ student.username }}</span>
+            <span class="text-xs text-slate-500 ml-2 font-mono">{{ student.email }}</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider group-open:hidden">View
+              Details</span>
+            <span class="text-slate-500 transition-transform group-open:rotate-180">▼</span>
+          </div>
+        </summary>
+        <div class="p-4 pt-0 border-t border-slate-700/50 mt-2">
+          {% if student.submissions.exists %}
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr>
+                  <th class="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Assignment</th>
+                  <th class="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Submitted</th>
+                  <th class="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Grade</th>
+                  <th class="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Comments</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800">
+                {% for sub in student.submissions.all %}
+                <tr class="hover:bg-slate-800/30">
+                  <td class="p-3">
+                    <span class="text-slate-300 text-sm font-bold block">{{ sub.assignment.title }}</span>
+                    <span class="text-[10px] text-slate-500">{{ sub.assignment.course.name }}</span>
+                  </td>
+                  <td class="p-3">
+                    <span class="text-slate-400 text-xs font-mono">{{ sub.submitted_at|date:"M d, Y" }}</span>
+                    <span class="text-[10px] text-slate-600 block">{{ sub.submitted_at|date:"H:i" }}</span>
+                  </td>
+                  <td class="p-3">
+                    {% if sub.is_marked %}
+                    <span
+                      class="font-bold {% if sub.grade == 'A' %}text-emerald-400{% elif sub.grade == 'F' %}text-rose-400{% else %}text-blue-400{% endif %}">
+                      {{ sub.grade }} <span class="text-[10px] text-slate-500 ml-1">({{ sub.percentage|floatformat:0
+                        }}%)</span>
+                    </span>
+                    {% else %}
+                    <span class="text-xs text-amber-400 font-bold bg-amber-400/10 px-2 py-1 rounded">Pending</span>
+                    {% endif %}
+                  </td>
+                  <td class="p-3">
+                    {% if sub.feedback %}
+                    <p class="text-xs text-slate-400 italic line-clamp-2" title="{{ sub.feedback }}">{{ sub.feedback }}
+                    </p>
+                    {% else %}
+                    <span class="text-slate-600 text-[10px]">--</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-slate-500 italic text-sm text-center py-4">No submissions found for this student.</p>
+          {% endif %}
+        </div>
+      </details>
+      {% empty %}
+      <div class="text-center py-12">
+        <p class="text-slate-500 italic">No students found matching your search.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination Controls -->
+    {% if students.has_other_pages %}
+    <div class="flex items-center justify-between border-t border-slate-700/50 mt-6 pt-4">
+      <span class="text-xs text-slate-500">
+        Showing {{ students.start_index }}-{{ students.end_index }} of {{ students.paginator.count }}
+      </span>
+      <div class="flex gap-1">
+        {% if students.has_previous %}
+        <a href="?page={{ students.previous_page_number }}&q={{ search_query }}&per_page={{ per_page }}"
+          class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white text-xs rounded-lg border border-slate-700 transition-colors">Previous</a>
+        {% endif %}
+
+        {% for i in students.paginator.page_range %}
+        {% if students.number == i %}
+        <span class="px-3 py-1 bg-blue-600 text-white text-xs rounded-lg font-bold">{{ i }}</span>
+        {% elif i > students.number|add:'-3' and i < students.number|add:'3' %} <a
+          href="?page={{ i }}&q={{ search_query }}&per_page={{ per_page }}"
+          class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs rounded-lg border border-slate-700 transition-colors">
+          {{ i }}</a>
+          {% endif %}
+          {% endfor %}
+
+          {% if students.has_next %}
+          <a href="?page={{ students.next_page_number }}&q={{ search_query }}&per_page={{ per_page }}"
+            class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white text-xs rounded-lg border border-slate-700 transition-colors">Next</a>
+          {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+<style>
+  /* Custom Scrollbar for list containers */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(30, 41, 59, 0.5);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(71, 85, 105, 0.8);
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 1);
+  }
+</style>
+{% endblock %}

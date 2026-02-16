@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Meeting &mdash; <span
+                    class="text-slate-400 font-medium">Management</span></h1>
+            <p class="text-slate-400 mt-2">Create daily online class links and share recordings with your students.</p>
+        </div>
+        <a href="{% url 'lecturer-dashboard' %}"
+            class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-colors border border-slate-700 text-sm font-bold">Back
+            to Dashboard</a>
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-3">
+        <!-- Create Meeting Form -->
+        <div class="p-8 rounded-3xl bg-slate-800/50 border border-slate-700 backdrop-blur-md shadow-2xl">
+            <h2 class="text-xl font-bold text-white mb-6">Schedule Class</h2>
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+
+                {% for field in form %}
+                <div class="space-y-1">
+                    {{ field }}
+                    {% if field.errors %}
+                    <p class="text-rose-400 text-[10px] mt-1">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <button type="submit"
+                    class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+                    Create Meeting
+                </button>
+            </form>
+        </div>
+
+        <!-- Meeting List -->
+        <div class="lg:col-span-2 space-y-6">
+            <h2 class="text-xl font-bold text-white mb-4">Upcoming & Past Classes</h2>
+            <div class="grid gap-4">
+                {% for meeting in meetings %}
+                <div
+                    class="p-6 rounded-2xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div class="flex-1 space-y-4">
+                        <!-- Topic -->
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Meeting Topic
+                            </p>
+                            <h3 class="text-white font-black text-lg">
+                                {{ meeting.topic }}
+                            </h3>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Cohort -->
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Cohort
+                                </p>
+                                <span class="text-blue-400 font-bold">
+                                    {{ meeting.cohort.name }}
+                                </span>
+                            </div>
+                            <!-- Date Label -->
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Meeting
+                                    Date & Time</p>
+                                <span class="text-slate-400 font-mono font-bold">
+                                    {{ meeting.meeting_date|date:"D, M d, Y" }} @ {{ meeting.meeting_date|date:"H:i" }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        {% if meeting.meeting_password %}
+                        <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-700/50">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Meeting
+                                Password</p>
+                            <span class="text-slate-300 font-mono font-bold">
+                                {{ meeting.meeting_password }}
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex flex-col gap-2 w-full md:w-auto">
+                        <a href="{{ meeting.meeting_link }}" target="_blank"
+                            class="px-6 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-center font-black rounded-xl transition-all border border-emerald-500/20 text-xs uppercase shadow-glow">
+                            JOIN CLASS
+                        </a>
+
+                        <a href="{% url 'upload-recording' meeting.id %}"
+                            class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white text-center font-black rounded-xl transition-all text-xs uppercase">
+                            {% if meeting.recording_shared_at %}SHARED RECORDING{% else %}SHARE RECORDING{% endif %}
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-10 rounded-2xl bg-slate-900/30 border border-slate-800 border-dashed text-center">
+                    <p class="text-slate-500 text-sm">No meetings scheduled yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Enrollment Report</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 10px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        h1 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .date {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Enrollment Report</h1>
+    <div class="date">Generated on: {{ date }}</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Email</th>
+                <th>Course</th>
+                <th>Enrolled Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for enrollment in enrollments %}
+            <tr>
+                <td>{{ enrollment.student.username }}</td>
+                <td>{{ enrollment.student.email }}</td>
+                <td>{{ enrollment.course.name }}</td>
+                <td>{{ enrollment.enrolled_at|date:"Y-m-d" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

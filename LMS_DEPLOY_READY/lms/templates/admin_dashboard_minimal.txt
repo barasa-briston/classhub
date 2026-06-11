@@ -1,3 +1,0 @@
-{% with pp=per_page %}
-<option value="10" {% if pp == "10" %}selected{% endif %}>10 rows</option>
-{% endwith %}

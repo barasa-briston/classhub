@@ -1,14 +1,15 @@
-# Django
-*.log
-*.pot
-*.pyc
+# Media & Static
+media/
+staticfiles/
+node_modules/
+
+# Python / Django
 __pycache__/
-local_settings.py
+*.pyc
 db.sqlite3
 db.sqlite3-journal
-media/
 
-# Virtual Environment
+# Virtual Environments
 .venv/
 venv/
 ENV/
@@ -18,15 +19,29 @@ env/
 .vscode/
 .idea/
 
-# OS
-.DS_Store
-Thumbs.db
+# Deployment Packaging
+LMS_DEPLOY_READY/
+export_for_flash.py
 
-# Other
-*.bak
-*.swp
+# Logs and Debugs
+*.log
 *.tmp
 verification_output.html
 verify_link_output.txt
 debug_output.txt
 crash_report.txt
+*.html.html
+debug_*.html
+template_check_output.txt
+lecturer_error.txt
+rendered_*.html
+test_error.txt
+test_output.txt
+verify_link_output.txt
+error.txt
+crash_report.txt
+cf.log
+cf_tunnel.log
+ngrok.log
+lt.log
+server_error.log

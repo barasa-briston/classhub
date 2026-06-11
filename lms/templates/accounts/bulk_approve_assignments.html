@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-white">Review Pending Assignments</h1>
+            <p class="text-slate-400 text-sm mt-1">Approve or reject assignments before they become visible to students.
+            </p>
+        </div>
+        <a href="{% url 'admin-dashboard' %}"
+            class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-sm font-bold">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+    {% if pending_assignments %}
+    <form method="POST" action="{% url 'bulk-approve-assignments' %}" id="bulk-approve-form">
+        {% csrf_token %}
+
+        <!-- Action Bar -->
+        <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+                <input type="checkbox" id="select-all"
+                    class="w-5 h-5 bg-slate-900 border-slate-600 rounded focus:ring-amber-500 text-amber-500">
+                <label for="select-all" class="text-slate-300 text-sm font-medium cursor-pointer">Select All</label>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="submit"
+                    class="px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-lg shadow-lg shadow-amber-500/20 transition-all transform hover:scale-105">
+                    Approve Selected
+                </button>
+                <button type="button" onclick="submitReject()"
+                    class="px-5 py-2 bg-slate-700 hover:bg-rose-600/80 text-white font-bold rounded-lg transition-colors">
+                    Reject Selected
+                </button>
+            </div>
+        </div>
+
+        <!-- Assignments List -->
+        <div class="grid gap-4">
+            {% for assignment in pending_assignments %}
+            <div
+                class="bg-slate-800 rounded-xl p-5 border border-slate-700 hover:border-amber-500/50 transition-colors group">
+                <div class="flex items-start gap-4">
+                    <div class="pt-1">
+                        <input type="checkbox" name="assignment_ids" value="{{ assignment.id }}"
+                            class="assignment-checkbox w-5 h-5 bg-slate-900 border-slate-600 rounded focus:ring-amber-500 text-amber-500">
+                    </div>
+
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">
+                                    {{ assignment.title }}
+                                </h3>
+                                <p class="text-slate-400 text-sm mt-1">
+                                    {{ assignment.course.title }} • {{ assignment.module.title|default:"No Module" }}
+                                </p>
+                            </div>
+                            <span
+                                class="px-3 py-1 bg-amber-500/10 text-amber-400 text-xs font-bold rounded-full border border-amber-500/20">
+                                {{ assignment.get_status_display }}
+                            </span>
+                        </div>
+
+                        <div class="flex items-center gap-6 mt-4 text-sm text-slate-500">
+                            <div class="flex items-center gap-2">
+                                <span>👤</span>
+<span>Created by {{ assignment.created_by.get_full_name|default:assignment.created_by.username }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span>📅</span>
+                                <span>Created {{ assignment.created_at|date:"M d, Y" }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span>⏰</span>
+                                <span>Due {{ assignment.availabilities.first.deadline|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </form>
+
+    <!-- Reject Form (Hidden) -->
+    <form method="POST" action="{% url 'bulk-reject-assignments' %}" id="bulk-reject-form" class="hidden">
+        {% csrf_token %}
+        <div id="reject-inputs"></div>
+    </form>
+
+    {% else %}
+    <div class="text-center py-20 bg-slate-800/30 rounded-2xl border border-dashed border-slate-700">
+        <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-3xl">✅</span>
+        </div>
+        <h3 class="text-xl font-bold text-white">All Caught Up!</h3>
+        <p class="text-slate-400 mt-2">There are no assignments pending approval at the moment.</p>
+        <a href="{% url 'admin-dashboard' %}"
+            class="inline-block mt-6 px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+            Return to Dashboard
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Select All functionality
+    const selectAllCheckbox = document.getElementById('select-all');
+    const assignmentCheckboxes = document.querySelectorAll('.assignment-checkbox');
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function () {
+            assignmentCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
+    }
+
+    // Submit Reject Logic
+    function submitReject() {
+        const selectedIds = Array.from(assignmentCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+
+        if (selectedIds.length === 0) {
+            // Use toast if available, or alert
+            alert('Please select at least one assignment to reject.');
+            return;
+        }
+
+        const reason = prompt("Please provide a reason for rejection:");
+        if (reason === null) return; // User cancelled
+
+        const rejectForm = document.getElementById('bulk-reject-form');
+        const rejectInputs = document.getElementById('reject-inputs');
+        rejectInputs.innerHTML = ''; // Clear previous
+
+        // Add IDs
+        selectedIds.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'assignment_ids';
+            input.value = id;
+            rejectInputs.appendChild(input);
+        });
+
+        // Add Reason
+        const reasonInput = document.createElement('input');
+        reasonInput.type = 'hidden';
+        reasonInput.name = 'rejection_reason';
+        reasonInput.value = reason;
+        rejectInputs.appendChild(reasonInput);
+
+        rejectForm.submit();
+    }
+</script>
+{% endblock %}

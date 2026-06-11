@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight mb-6 sm:mb-8">Audit Logs &mdash; <span
+            class="text-brand-grey font-medium text-lg sm:text-2xl">System Activity Review</span></h1>
+        <div class="grid grid-cols-1 sm:flex items-center gap-2">
+            <a href="{% url 'admin-dashboard' %}"
+                class="px-4 py-2 bg-brand-darkblue/80 hover:bg-brand-darkblue text-brand-grey text-sm font-bold rounded-xl transition-all border border-brand-grey/20 text-center flex items-center justify-center gap-2">
+                &larr; Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="p-4 md:p-6 rounded-2xl bg-white/5 border border-brand-grey/20 backdrop-blur-sm">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
+            <div class="relative">
+                <label class="block text-brand-lightblue text-[10px] font-bold uppercase tracking-wider mb-2">Model</label>
+                <select name="model" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-lightblue transition-colors">
+                    <option value="">All Models</option>
+                    {% for m in distinct_models %}
+                    <option value="{{ m }}" {% if m == model_filter %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="relative">
+                <label class="block text-brand-lightblue text-[10px] font-bold uppercase tracking-wider mb-2">User</label>
+                <select name="user_id" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-lightblue transition-colors">
+                    <option value="">All Users</option>
+                    {% for u in active_users %}
+                    <option value="{{ u.id }}" {% if u.id|stringformat:"i" == user_filter %}selected{% endif %}>{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="relative">
+                <label class="block text-brand-lightblue text-[10px] font-bold uppercase tracking-wider mb-2">Action Type</label>
+                <select name="action_type" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-lightblue transition-colors">
+                    <option value="">All Types</option>
+                    {% for type in action_types %}
+                    <option value="{{ type }}" {% if type == action_type %}selected{% endif %}>{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="relative">
+                <label class="block text-brand-lightblue text-[10px] font-bold uppercase tracking-wider mb-2">From Date</label>
+                <input type="date" name="date_from" value="{{ date_from }}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-lightblue transition-colors">
+            </div>
+            <div class="relative">
+                <label class="block text-brand-lightblue text-[10px] font-bold uppercase tracking-wider mb-2">To Date</label>
+                <input type="date" name="date_to" value="{{ date_to }}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-lightblue transition-colors">
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 bg-brand-lightblue hover:bg-white text-brand-darkblue font-bold py-2 rounded-lg transition-all text-xs">
+                    Apply
+                </button>
+                <a href="{% url 'system-audit-logs' %}" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-lg transition-all text-xs text-center">
+                    Reset
+                </a>
+            </div>
+            <div class="lg:col-span-6 mt-4">
+                <input type="text" name="q" value="{{ search_q }}" placeholder="Search details or object names..." class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-lightblue transition-colors">
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Table -->
+    <div class="p-6 rounded-2xl bg-white/5 border border-brand-grey/20 backdrop-blur-sm overflow-hidden">
+        <div class="overflow-x-auto -mx-6 px-6">
+            <table class="w-full text-left text-brand-grey text-sm whitespace-nowrap min-w-[800px]">
+                <thead>
+                    <tr class="border-b border-white/10 uppercase tracking-widest text-[10px] sm:text-xs">
+                        <th class="py-4 font-bold text-white">Timestamp</th>
+                        <th class="py-4 font-bold text-white">User</th>
+                        <th class="py-4 font-bold text-white">Action</th>
+                        <th class="py-4 font-bold text-white">Model</th>
+                        <th class="py-4 font-bold text-white">Object</th>
+                        <th class="py-4 font-bold text-white text-right">Details</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    {% for log in logs %}
+                    <tr class="hover:bg-white/5 transition-colors group text-xs sm:text-sm">
+                        <td class="py-4">
+                            <span class="block text-white font-medium">{{ log.timestamp|date:"M. d, Y" }}</span>
+                            <span class="text-[10px] text-brand-grey/60">{{ log.timestamp|time:"H:i A" }}</span>
+                        </td>
+                        <td class="py-4">
+                            {% if log.user %}
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-full bg-brand-lightblue flex items-center justify-center text-brand-darkblue font-bold text-[10px] uppercase">
+                                        {{ log.user.username|make_list|first }}
+                                    </div>
+                                    <span class="text-white font-medium">{{ log.user.username }}</span>
+                                </div>
+                            {% else %}
+                                <span class="text-brand-grey italic">System Automation</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4">
+                            <span class="font-bold text-[10px] uppercase px-2 py-1 rounded inline-block
+                                {% if 'CREATE' in log.action or 'APPROVE' in log.action %}bg-brand-lightblue/20 text-brand-lightblue
+                                {% elif 'DELETE' in log.action or 'REJECT' in log.action %}bg-rose-500/20 text-rose-500
+                                {% else %}bg-brand-grey/20 text-brand-grey{% endif %}">
+                                {{ log.action }}
+                            </span>
+                        </td>
+                        <td class="py-4 font-bold tracking-wide text-white/80">{{ log.model_name }}</td>
+                        <td class="py-4 max-w-[200px] truncate text-slate-300" title="{{ log.object_repr }}">{{ log.object_repr }}</td>
+                        <td class="py-4 text-right">
+                            <button title="{{ log.details }}" onclick="alert('Raw Data:\n\n' + this.title)" class="p-2 rounded hover:bg-white/10 text-brand-grey hover:text-white transition-colors">
+                                <i class="fas fa-search-plus"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-brand-grey">
+                            No logs found matching your criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if logs.has_other_pages %}
+        <div class="mt-6 flex justify-center items-center gap-2 border-t border-brand-grey/20 pt-6">
+            {% if logs.has_previous %}
+            <a href="?page={{ logs.previous_page_number }}{% if model_filter %}&model={{ model_filter }}{% endif %}{% if user_filter %}&user_id={{ user_filter }}{% endif %}{% if action_type %}&action_type={{ action_type }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_q %}&q={{ search_q }}{% endif %}" title="Previous Page"
+                class="w-8 h-8 rounded-full border border-brand-grey/40 flex items-center justify-center hover:bg-slate-700 transition">
+                <i class="fas fa-chevron-left text-xs text-white"></i>
+            </a>
+            {% endif %}
+
+            <span class="text-xs font-bold text-white px-4">
+                Page {{ logs.number }} of {{ logs.paginator.num_pages }}
+            </span>
+
+            {% if logs.has_next %}
+            <a href="?page={{ logs.next_page_number }}{% if model_filter %}&model={{ model_filter }}{% endif %}{% if user_filter %}&user_id={{ user_filter }}{% endif %}{% if action_type %}&action_type={{ action_type }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_q %}&q={{ search_q }}{% endif %}" title="Next Page"
+                class="w-8 h-8 rounded-full border border-brand-grey/40 flex items-center justify-center hover:bg-slate-700 transition">
+                <i class="fas fa-chevron-right text-xs text-white"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

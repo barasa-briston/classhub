@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Student Progress Report</title>
+    <style>
+        @page {
+            size: landscape;
+            margin: 0.3cm;
+        }
+
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.0;
+        }
+
+        .header-section {
+            border-bottom: 2px solid #0f172a;
+            margin-bottom: 3px;
+            padding-bottom: 3px;
+        }
+
+        .header-table {
+            width: 100%;
+            border: none;
+        }
+
+        .header-table td {
+            border: none;
+            vertical-align: middle;
+            padding: 0;
+        }
+
+        .logo-img {
+            height: 35px;
+        }
+
+        .title-container {
+            text-align: right;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 2px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 2px 3px;
+            text-align: left;
+            font-size: 9px;
+            word-wrap: break-word;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        h1 {
+            font-size: 14px;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+            text-transform: uppercase;
+        }
+
+        .date {
+            font-size: 8px;
+            color: #64748b;
+            margin-top: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-section">
+        <table class="header-table">
+            <tr>
+                <td>
+                    <img src="c:\Users\BRISTON\Desktop\CCNA CLASSES\lms\lms\static\images\academy_combined_logo.png" class="logo-img" alt="Chuka University Cisco Academy Logo">
+                </td>
+                <td class="title-container">
+                    <h1>Student Progress Report (By Cohort)</h1>
+                    <div class="date">Generated on: {{ date }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 15%;">Admin No</th>
+                <th style="width: 20%;">Student Name</th>
+                <th style="width: 15%;">Course</th>
+                <th style="width: 15%;">Cohort</th>
+                <th style="width: 10%;">Total Assignments</th>
+                <th style="width: 10%;">Submitted</th>
+                <th style="width: 10%;">Not Submitted</th>
+                <th style="width: 10%;">Progress %</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in report_data %}
+            <tr>
+                <td>{{ item.reg_no }}</td>
+                <td>{{ item.enrollment.student.get_full_name|default:item.enrollment.student.username }}</td>
+                <td>{{ item.enrollment.course.name }}</td>
+                <td>{{ item.enrollment.cohort.name|default:"N/A" }}</td>
+                <td>{{ item.total_assignments }}</td>
+                <td>{{ item.submitted }}</td>
+                <td>{{ item.not_submitted }}</td>
+                <td>{{ item.progress_percent|floatformat:1 }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

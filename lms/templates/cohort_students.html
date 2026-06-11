@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-8">
+    <div class="flex items-center gap-4 mb-4">
+        <a href="{% url 'lecturer-dashboard' %}"
+            class="w-10 h-10 rounded-full bg-brand-darkblue flex items-center justify-center text-white hover:bg-slate-700 transition-colors border border-brand-grey/20">
+            ←
+        </a>
+        <h1 class="text-3xl font-extrabold text-white tracking-tight">Cohort Students &mdash; <span
+                class="text-brand-grey font-medium">{{ cohort.name }}</span></h1>
+    </div>
+
+    <div class="grid gap-6">
+        <div class="p-6 rounded-3xl bg-brand-darkblue/50 border border-brand-grey/20 backdrop-blur-sm">
+            <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                <i class="fa-solid fa-users text-brand-red"></i>
+                Enrolled Students
+            </h2>
+
+            <div class="overflow-hidden rounded-2xl border border-brand-grey/10">
+                <table class="w-full text-left">
+                    <thead class="bg-brand-darkblue">
+                        <tr>
+                            <th class="px-6 py-4 text-[10px] font-black text-brand-grey uppercase tracking-widest">
+                                Student Name</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-brand-grey uppercase tracking-widest">Email
+                                Address</th>
+                            <th
+                                class="px-6 py-4 text-[10px] font-black text-brand-grey uppercase tracking-widest text-right">
+                                Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-brand-grey/10">
+                        {% for e in enrollments %}
+                        <tr class="hover:bg-white/5 transition-colors group">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-8 h-8 rounded-lg bg-brand-red/10 flex items-center justify-center text-brand-red text-xs font-black">
+                                        {{ e.student.username|slice:":1"|upper }}
+                                    </div>
+<span class="text-white font-bold">{{ e.student.get_full_name|default:e.student.username }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-brand-grey text-sm font-medium">{{ e.student.email }}</td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{% url 'view-student-report' e.student.id %}"
+                                    class="inline-flex items-center gap-2 px-4 py-2 bg-brand-red text-white text-[10px] font-black rounded-xl hover:bg-red-600 transition-all shadow-lg shadow-red-500/10">
+                                    VIEW ASSIGNMENTS
+                                    <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="px-6 py-12 text-center text-brand-grey italic font-medium">
+                                No students enrolled in this cohort yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

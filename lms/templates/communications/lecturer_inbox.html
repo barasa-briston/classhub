@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between mb-2">
+        <h1 class="text-2xl font-extrabold text-white tracking-tight">Student Support Tickets</h1>
+    </div>
+
+    <div class="grid gap-4">
+        {% for ticket in tickets %}
+        <a href="{% url 'ticket-thread' ticket.id %}"
+            class="block p-5 rounded-2xl bg-brand-darkblue/50 border border-brand-grey/20 hover:border-brand-red/50 transition-all shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-white">{{ ticket.subject }}</h3>
+                    <!-- Safe formatting -->
+                    <p class="text-xs text-brand-grey mt-1">
+                        <i class="fa-solid fa-user mr-1"></i>
+                        {{ ticket.student.username }} &bull;
+                        <i class="fa-solid fa-folder-open mx-1"></i> {{ ticket.cohort.name }} &bull;
+                        {{ ticket.updated_at|timesince }} ago
+                    </p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span
+                        class="px-2 py-0.5 rounded text-[9px] font-black uppercase
+                        {% if ticket.status == 'OPEN' %}bg-emerald-500/10 text-emerald-400{% else %}bg-amber-500/10 text-amber-500{% endif %}">
+                        {{ ticket.status }}
+                    </span>
+                    {% if ticket.unread_count > 0 %}
+                    <span
+                        class="w-6 h-6 rounded-full bg-brand-red flex items-center justify-center text-[10px] font-black text-white shadow-lg shadow-red-500/20">
+                        {{ ticket.unread_count }}
+                    </span>
+                    {% endif %}
+                    <i class="fa-solid fa-chevron-right text-brand-grey text-sm"></i>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <div class="p-10 text-center text-brand-grey border border-brand-grey/10 border-dashed rounded-3xl">
+            <i class="fa-regular fa-comments text-4xl mb-3 opacity-50"></i>
+            <p>There are no open support tickets from your students.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

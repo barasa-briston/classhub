@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                🎓 Graduate <span class="text-brand-lightblue">Communications</span>
+            </h1>
+            <p class="text-slate-400 mt-2 text-sm">Send personalized congratulatory messages to students who have completed all course requirements.</p>
+        </div>
+        <a href="{% url 'admin-dashboard' %}" 
+           class="px-6 py-3 bg-slate-800/80 hover:bg-slate-700 text-white font-bold rounded-2xl transition-all border border-slate-700 text-center">
+           Back to Dashboard
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Sidebar: Cohort Selection -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="p-6 rounded-3xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm shadow-xl">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Step 1: Select Target Cohort</h3>
+                <form method="GET" class="space-y-4">
+                    <select name="cohort" onchange="this.form.submit()" title="Select a cohort to identify qualified students"
+                            class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-4 text-white font-bold focus:border-brand-lightblue focus:ring-1 focus:ring-brand-lightblue transition-all outline-none">
+                        <option value="">-- Choose a Cohort --</option>
+                        {% for cohort in cohorts %}
+                        <option value="{{ cohort.id }}" {% if selected_cohort.id == cohort.id %}selected{% endif %}>
+                            {{ cohort.name }} {% if cohort.intake_label %}({{ cohort.intake_label }}){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </form>
+
+                {% if selected_cohort %}
+                <div class="mt-8 pt-6 border-t border-slate-700/50">
+                    <h4 class="text-xs font-bold text-brand-lightblue uppercase tracking-widest mb-4">Cohort Stats</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 rounded-2xl bg-slate-900/50 border border-slate-800">
+                            <span class="block text-[10px] text-slate-500 uppercase font-black">Qualified</span>
+                            <span class="text-2xl font-black text-emerald-400">{{ students|length }}</span>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-slate-900/50 border border-slate-800">
+                            <span class="block text-[10px] text-slate-500 uppercase font-black">Requirements</span>
+                            <span class="text-2xl font-black text-white">{% if students %}{{ students.0.total }}{% else %}--{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Reminder Card -->
+            <div class="p-6 rounded-3xl bg-brand-lightblue/5 border border-brand-lightblue/20">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-brand-lightblue/20 flex items-center justify-center text-brand-lightblue">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-black text-brand-lightblue">How it works</h4>
+                        <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                            A student is considered "Qualified" if they have completed <span class="text-emerald-400 font-bold">50+ assignments</span> with an average grade of at least <span class="text-emerald-400 font-bold">75%</span>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content: Message & Selection -->
+        <div class="lg:col-span-8">
+            {% if not selected_cohort %}
+            <div class="h-full flex flex-col items-center justify-center p-12 rounded-3xl bg-slate-800/20 border-2 border-dashed border-slate-700">
+                <div class="w-20 h-20 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-500 mb-6 border border-slate-700">
+                    <i class="fas fa-university text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-300">No Cohort Selected</h3>
+                <p class="text-slate-500 text-sm mt-2">Please select a cohort from the left to identify students who are ready to graduate.</p>
+            </div>
+            {% elif not students %}
+            <div class="h-full flex flex-col items-center justify-center p-12 rounded-3xl bg-slate-800/20 border-2 border-dashed border-slate-700 text-center">
+                <div class="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-6 border border-emerald-500/20">
+                    <i class="fas fa-search text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">All Caught Up!</h3>
+                <p class="text-slate-400 text-sm mt-2 max-w-sm">No students in this cohort currently meet the full completion criteria (Passes in all required assignments).</p>
+            </div>
+            {% else %}
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Message Composer -->
+                <div class="p-8 rounded-3xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm shadow-xl">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Step 2: Compose Message</h3>
+                    
+                    <div class="space-y-5">
+                        <div>
+                            <label for="id_title" class="block text-xs font-bold text-slate-500 uppercase mb-2">Subject</label>
+                            <input type="text" id="id_title" name="title" value="Congratulations on Completing your Course!"
+                                   title="Enter the subject of your message"
+                                   class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white font-bold focus:border-brand-lightblue transition-all outline-none">
+                        </div>
+                        <div>
+                            <label for="id_content" class="block text-xs font-bold text-slate-500 uppercase mb-2">Message Body</label>
+                            <textarea id="id_content" name="content" rows="6" title="Enter the message body"
+                                      class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-brand-lightblue transition-all outline-none resize-none">{{ default_message }}</textarea>
+                            <p class="text-[10px] text-slate-500 mt-2 italic">Tip: Use <b>{name}</b>, <b>{course}</b>, or <b>{instructor}</b> to personalize the message for each student.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recipient Selection -->
+                <div class="p-8 rounded-3xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm shadow-xl">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Step 3: Select Recipients</h3>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase">Select All</span>
+                            <input type="checkbox" id="select-all" checked onchange="toggleAll(this)"
+                                   class="w-5 h-5 rounded border-slate-700 bg-slate-900 text-brand-lightblue focus:ring-brand-lightblue cursor-pointer">
+                        </div>
+                    </div>
+
+                    <div class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div class="grid gap-3">
+                            {% for student in students %}
+                            <label class="flex items-center justify-between p-4 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-slate-600 transition-all cursor-pointer group">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-sm font-bold text-white border border-slate-700 group-hover:bg-brand-lightblue group-hover:text-brand-darkblue transition-colors">
+                                        {{ student.raw_username|make_list|first|upper }}
+                                    </div>
+                                    <div>
+                                        <span class="block font-bold text-white">{{ student.username }}</span>
+                                        {% if student.email %}
+                                        <span class="block text-[10px] text-slate-500 font-mono italic">{{ student.email }}</span>
+                                        {% else %}
+                                        <span class="block text-[10px] text-slate-600 italic">No email on file</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-6">
+                                    <div class="hidden sm:block text-right">
+                                        <span class="block text-[10px] font-black text-emerald-400 uppercase">Average Grade</span>
+                                        <span class="text-sm text-white font-bold block leading-none mb-1">{{ student.avg }}%</span>
+                                        <span class="text-[9px] text-slate-500 font-black uppercase">{{ student.completed }}/{{ student.total }} Submissions</span>
+                                    </div>
+                                    <input type="checkbox" name="student_ids" value="{{ student.id }}" checked
+                                           title="Select {{ student.username }} for congratulation"
+                                           class="student-checkbox w-6 h-6 rounded-lg border-slate-700 bg-slate-900 text-brand-lightblue focus:ring-brand-lightblue cursor-pointer">
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-slate-700/50">
+                        <button type="submit" 
+                                class="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black rounded-2xl transition-all shadow-xl shadow-cyan-500/20 active:scale-[0.98] flex items-center justify-center gap-3">
+                            <i class="fas fa-paper-plane"></i>
+                            Broadcast Congratulations
+                        </button>
+                    </div>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleAll(source) {
+        checkboxes = document.getElementsByName('student_ids');
+        for(var i=0, n=checkboxes.length;i<n;i++) {
+            checkboxes[i].checked = source.checked;
+        }
+    }
+
+    // Auto-update "select all" state
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('student-checkbox')) {
+            const allChecked = Array.from(document.querySelectorAll('.student-checkbox')).every(c => c.checked);
+            document.getElementById('select-all').checked = allChecked;
+        }
+    });
+</script>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.1);
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(71, 85, 105, 0.5);
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}

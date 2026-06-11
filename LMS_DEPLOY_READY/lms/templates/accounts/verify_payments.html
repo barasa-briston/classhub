@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-extrabold text-white tracking-tight">Verify Payments</h1>
+        <a href="{% url 'admin-dashboard' %}"
+            class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 transition-colors font-bold text-sm">Back
+            to Dashboard</a>
+    </div>
+
+    <div class="p-6 rounded-2xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm">
+        <h2 class="text-xl font-bold text-white mb-4">Pending Payments</h2>
+
+        {% if payments %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-slate-400 border-b border-slate-700 text-xs uppercase tracking-wider">
+                        <th class="p-4 font-bold">Student Name</th>
+                        <th class="p-4 font-bold">Admin No</th>
+                        <th class="p-4 font-bold">Amount Paid</th>
+                        <th class="p-4 font-bold">Mode</th>
+                        <th class="p-4 font-bold">Medium</th>
+                        <th class="p-4 font-bold">Reference</th>
+                        <th class="p-4 font-bold">Bank Slip</th>
+                        <th class="p-4 font-bold text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-slate-300 divide-y divide-slate-700/50">
+                    {% for payment in payments %}
+                    <tr class="hover:bg-slate-700/30 transition-colors group">
+                        <!-- Student Name -->
+                        <td class="p-4 font-bold text-white">{{ payment.student.username }}</td>
+
+                        <!-- Admin Number (Registration Number) -->
+                        <td class="p-4 font-mono text-xs text-slate-400">
+                            {{ payment.student.studentprofile.registration_number|default:"-" }}
+                        </td>
+
+                        <!-- Fee Amount Paid -->
+                        <td class="p-4 font-bold text-emerald-400">KES {{ payment.amount }}</td>
+
+                        <!-- Mode (M-Pesa/Bank) -->
+                        <td class="p-4">
+                            <span
+                                class="px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider 
+                                {% if 'Mobile' in payment.payment_method %}bg-green-500/20 text-green-400{% else %}bg-blue-500/20 text-blue-400{% endif %}">
+                                {{ payment.payment_method }}
+                            </span>
+                        </td>
+                        <!-- Medium (Provider) -->
+                        <td class="p-4 text-xs text-slate-400 font-bold">
+                            {{ payment.provider|default:"-" }}
+                        </td>
+
+                        <!-- Reference -->
+                        <td class="p-4 font-mono text-xs text-amber-500">{{ payment.transaction_id|default:"-" }}</td>
+
+                        <!-- Bank Slip -->
+                        <td class="p-4">
+                            {% if payment.bank_slip %}
+                            <a href="{{ payment.bank_slip.url }}" target="_blank"
+                                class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition-all border border-slate-600/50 group">
+                                <span class="group-hover:scale-110 transition-transform">📂</span> View Slip
+                            </a>
+                            {% else %}
+                            <span class="text-[10px] text-slate-600 italic">No slip</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="p-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <!-- Approve Form -->
+                                <form action="{% url 'verify-payment' payment.id %}" method="POST" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit"
+                                        class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-emerald-500/20">
+                                        Approve
+                                    </button>
+                                </form>
+
+                                <!-- Reject Button (Toggles Modal/Input) -->
+                                <button onclick="toggleReject('reject-{{ payment.id }}')"
+                                    class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-rose-500/20">
+                                    Reject
+                                </button>
+                            </div>
+
+                            <!-- Hidden Rejection Form (Inline) -->
+                            <div id="reject-{{ payment.id }}"
+                                class="hidden mt-2 absolute right-10 bg-slate-800 border border-slate-600 p-2 rounded-xl shadow-xl z-10 w-64">
+                                <form action="{% url 'verify-payment' payment.id %}" method="POST"
+                                    class="flex flex-col gap-2">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <label class="text-xs font-bold text-slate-400">Reason for rejection:</label>
+                                    <textarea name="remarks" rows="2"
+                                        class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                                        required></textarea>
+                                    <div class="flex justify-end gap-2">
+                                        <button type="button" onclick="toggleReject('reject-{{ payment.id }}')"
+                                            class="text-xs text-slate-400 hover:text-white">Cancel</button>
+                                        <button type="submit"
+                                            class="px-3 py-1 bg-rose-600 text-white text-xs font-bold rounded-lg">Confirm
+                                            Reject</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <div class="w-16 h-16 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl">✓</span>
+            </div>
+            <p class="text-slate-500 font-bold">No pending payments to verify.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+<script>
+    function toggleReject(id) {
+        const el = document.getElementById(id);
+        el.classList.toggle('hidden');
+    }
+</script>
+{% endblock %}

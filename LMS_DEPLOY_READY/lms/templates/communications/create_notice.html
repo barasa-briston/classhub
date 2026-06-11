@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-8">
+    <div class="flex items-center gap-4 mb-8">
+        <a href="javascript:history.back()"
+            class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white hover:bg-slate-700 transition-colors border border-slate-700">
+            &larr;
+        </a>
+        <h1 class="text-3xl font-extrabold text-white tracking-tight">Create <span
+                class="text-brand-lightblue font-medium">Announcement</span></h1>
+    </div>
+
+    <div class="p-8 rounded-3xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm shadow-xl">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Notice Title</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                <p class="mt-1 text-sm text-rose-500">{{ form.title.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Content</label>
+                {{ form.content }}
+                {% if form.content.errors %}
+                <p class="mt-1 text-sm text-rose-500">{{ form.content.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Target Cohort (Optional)</label>
+                    <div class="relative">
+                        {{ form.cohort }}
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-2">Leave blank or select "--------" to broadcast to all students globally.</p>
+                </div>
+                
+                <div class="flex flex-col justify-center">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Settings</label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        {{ form.is_active }}
+                        <span class="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">Publish Immediately</span>
+                    </label>
+                </div>
+            </div>
+
+            <hr class="border-slate-700/50">
+
+            <div class="flex gap-4 pt-2">
+                <a href="{% url 'home' %}" class="flex-1 py-4 bg-slate-800 text-center hover:bg-slate-700 text-white font-bold rounded-2xl transition-all shadow-lg border border-slate-700">Cancel</a>
+                <button type="submit" class="flex-[2] py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-black rounded-2xl transition-all shadow-lg shadow-cyan-500/20">Broadcast Notice</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

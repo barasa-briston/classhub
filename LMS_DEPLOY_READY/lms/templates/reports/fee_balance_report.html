@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Fee Balance Report</title>
+    <style>
+        @page {
+            size: landscape;
+            margin: 0.3cm;
+        }
+
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.0;
+        }
+
+        .header-section {
+            border-bottom: 2px solid #0f172a;
+            margin-bottom: 3px;
+            padding-bottom: 3px;
+        }
+
+        .header-table {
+            width: 100%;
+            border: none;
+        }
+
+        .header-table td {
+            border: none;
+            vertical-align: middle;
+            padding: 0;
+        }
+
+        .logo-img {
+            height: 35px;
+        }
+
+        .title-container {
+            text-align: right;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 2px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 2px 3px;
+            text-align: left;
+            font-size: 9px;
+            word-wrap: break-word;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        h1 {
+            font-size: 14px;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+            text-transform: uppercase;
+        }
+
+        .date {
+            font-size: 8px;
+            color: #64748b;
+            margin-top: 1px;
+        }
+
+        .status-CLEARED { color: #10b981; font-weight: bold; }
+        .status-UNPAID, .status-PARTIAL { color: #f43f5e; font-weight: bold; }
+        .status-PENDINGVERIFICATION { color: #f59e0b; font-weight: bold; }
+    </style>
+</head>
+
+<body>
+    <div class="header-section">
+        <table class="header-table">
+            <tr>
+                <td>
+                    <img src="c:\Users\BRISTON\Desktop\CCNA CLASSES\lms\lms\static\images\academy_combined_logo.png" class="logo-img" alt="Chuka University Cisco Academy Logo">
+                </td>
+                <td class="title-container">
+                    <h1>Fee Balance Report (By Cohort)</h1>
+                    <div class="date">Generated on: {{ date }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 12%;">Admin No</th>
+                <th style="width: 17%;">Student Name</th>
+                <th style="width: 12%;">Course</th>
+                <th style="width: 12%;">Cohort</th>
+                <th style="width: 9%;">Course Fee</th>
+                <th style="width: 9%;">Total Paid</th>
+                <th style="width: 9%;">Pending</th>
+                <th style="width: 9%;">Balance</th>
+                <th style="width: 11%;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in report_data %}
+            <tr>
+                <td>{{ item.reg_no }}</td>
+                <td>{{ item.enrollment.student.get_full_name|default:item.enrollment.student.username }}</td>
+                <td>{{ item.enrollment.course.name }}</td>
+                <td>{{ item.enrollment.cohort.name|default:"N/A" }}</td>
+                <td>{{ item.course_fee|floatformat:2 }}</td>
+                <td>{{ item.total_paid|floatformat:2 }}</td>
+                <td>{{ item.pending_amount|floatformat:2 }}</td>
+                <td>{{ item.balance|floatformat:2 }}</td>
+                <td class="status-{{ item.status|cut:' ' }}">{{ item.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

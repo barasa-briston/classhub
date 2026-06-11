@@ -1,0 +1,26 @@
+
+@login_required
+def edit_meeting(request, meeting_id):
+    if request.user.role != 'LECTURER' and not request.user.is_superuser and request.user.role not in ['ADMIN', 'SUPERADMIN']:
+        raise Http404()
+    
+    meeting = get_object_or_404(OnlineMeeting, id=meeting_id)
+    
+    # Check permission (Lecturer must belong to cohort)
+    if not request.user.is_superuser and request.user.role not in ['ADMIN', 'SUPERADMIN']:
+        if request.user not in meeting.cohort.lecturers.all():
+            raise Http404("You are not the lecturer for this cohort.")
+            
+    if request.method == 'POST':
+        form = EditMeetingForm(request.POST, instance=meeting, lecturer=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Meeting '{meeting.topic}' updated successfully.")
+            return redirect('manage-meetings')
+    else:
+        form = EditMeetingForm(instance=meeting, lecturer=request.user)
+    
+    return render(request, 'meetings/edit.html', {
+        'form': form,
+        'meeting': meeting
+    })

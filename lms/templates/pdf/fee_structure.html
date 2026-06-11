@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        @page {
+            size: A4;
+            margin: 0.5cm;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.2;
+            color: #333;
+        }
+
+        .header-section {
+            border-bottom: 2px solid #0f172a;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .header-table {
+            width: 100%;
+            border: none;
+        }
+
+        .header-table td {
+            border: none;
+            vertical-align: middle;
+            padding: 0;
+        }
+
+        .logo-img {
+            height: 60px;
+        }
+
+        .title-container {
+            text-align: right;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0f172a;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .meta {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 8px 6px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 11px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #0f172a;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        .amount {
+            text-align: right;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 9pt;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+        }
+
+        .note {
+            margin-top: 30px;
+            font-size: 10pt;
+            background-color: #f8fafc;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-section">
+        <table class="header-table">
+            <tr>
+                <td>
+                    <img src="c:\Users\BRISTON\Desktop\CCNA CLASSES\lms\lms\static\images\academy_combined_logo.png" class="logo-img" alt="Chuka University Cisco Academy Logo">
+                </td>
+                <td class="title-container">
+                    <h1>Fee Structure</h1>
+                    <div class="meta">Fee Structure & Course Catalog</div>
+                    <div class="meta">Generated on: {% now "F j, Y" %}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 30%;">Course Name</th>
+                <th style="width: 50%;">Description</th>
+                <th style="width: 20%; text-align: right;">Fee (KES)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for course in courses %}
+            <tr>
+                <td>
+                    <div style="font-weight: bold;">{{ course.name }}</div>
+                    {% if course.cohort %}
+                    <div style="font-size: 9px; color: #64748b;">{{ course.cohort.name }}</div>
+                    {% endif %}
+                </td>
+                <td style="color: #475569;">
+                    {{ course.description|truncatewords:20|default:"No description available." }}
+                </td>
+                <td class="amount">{{ course.fee|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="note">
+        <strong>Payment Instructions:</strong><br>
+        Fees can be paid via M-Pesa or Bank Transfer. Please log in to your student dashboard to initiate payments or
+        verify bank transfers.
+        Ensure you use your student registration number as the reference for all manual payments.
+    </div>
+
+    <div class="footer">
+        &copy; {% now "Y" %} Chuka University CUCCNA Academy. All rights reserved.<br>
+        This document is valid without a signature.
+    </div>
+</body>
+
+</html>

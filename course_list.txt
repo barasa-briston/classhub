@@ -1,0 +1,9 @@
+--- Listing Courses ---
+ID: 1 | Name: CCNA 1 | Linked Cohort: January Cohort
+  -> Module Count: 19
+ID: 10 | Name: CCNA 1 | Linked Cohort: February Cohort
+  -> Module Count: 19
+ID: 11 | Name: Course 1 | Linked Cohort: Cohort 1
+  -> Module Count: 1
+ID: 12 | Name: Course 2 | Linked Cohort: No Cohort
+  -> Module Count: 1

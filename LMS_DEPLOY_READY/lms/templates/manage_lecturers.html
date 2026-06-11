@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Lecturer Management &mdash; <span
+                    class="text-slate-400 font-medium">Cohort Access</span></h1>
+            <p class="text-slate-400 mt-2">Assign lecturers to specific cohorts to control which assignments and
+                students they can manage.</p>
+        </div>
+        <a href="{% url 'admin-dashboard' %}"
+            class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-colors border border-slate-700">Back
+            to Dashboard</a>
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-2">
+        <!-- Cohort List Card -->
+        {% for cohort in cohorts %}
+        <div class="p-6 rounded-2xl bg-slate-800/50 border border-slate-700 backdrop-blur-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white">{{ cohort.name }}</h2>
+                    <span class="text-xs text-slate-500">{{ cohort.intake_label|default:"No Intake Label" }}</span>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-slate-900/50 rounded-xl border border-slate-700/50 overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-800/50 text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                            <tr>
+                                <th class="px-4 py-2">Lecturer</th>
+                                <th class="px-4 py-2 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                            {% for lecturer in cohort.lecturers.all %}
+                            <tr>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                        <span class="text-slate-200">{{ lecturer.username }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-right">
+                                    <form method="POST" class="inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="lecturer_id" value="{{ lecturer.id }}">
+                                        <input type="hidden" name="cohort_id" value="{{ cohort.id }}">
+                                        <input type="hidden" name="action" value="unassign">
+                                        <button type="submit"
+                                            class="text-rose-400 hover:text-rose-300 font-bold text-xs">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="px-4 py-6 text-center text-slate-500 italic">No lecturers
+                                    assigned to this cohort.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pt-4 border-t border-slate-700/50">
+                    <form method="POST" class="flex gap-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="cohort_id" value="{{ cohort.id }}">
+                        <input type="hidden" name="action" value="assign">
+                        <select name="lecturer_id" aria-label="Select Lecturer to Add" required
+                            class="flex-1 bg-slate-900 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Lecturer to Add...</option>
+                            {% for lecturer in lecturers %}
+                            {% if lecturer not in cohort.lecturers.all %}
+                            <option value="{{ lecturer.id }}">{{ lecturer.username }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                        <button type="submit"
+                            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-colors shadow-lg shadow-blue-500/20">Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

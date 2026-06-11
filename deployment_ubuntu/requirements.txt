@@ -1,0 +1,10 @@
+django>=5.0
+django-jazzmin
+django-cors-headers
+whitenoise
+djangorestframework
+djangorestframework-simplejwt
+gunicorn
+python-dotenv
+xhtml2pdf
+Pillow
